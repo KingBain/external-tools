@@ -48,6 +48,19 @@ RUN wget https://github.com/ablab/spades/releases/download/v3.11.0/SPAdes-3.11.0
     tar -xvf SPAdes-3.11.0-Linux.tar.gz && \
     mv SPAdes-3.11.0-Linux spades
 
+#Spring
+FROM debian:buster as spring
+WORKDIR /build
+RUN apt-get update && apt-get install -y make cmake g++ zlib1g-dev  wget
+RUN wget https://github.com/shubhamchandak94/Spring/archive/refs/tags/v1.0.1.tar.gz && \
+    tar -xzvf v1.0.1.tar.gz && \
+    cd Spring-1.0.1 && \
+    mkdir -p build && \
+    cd build && \
+    cmake .. && \
+    make
+
+
 # Build
 FROM python:3.8-buster
 COPY --from=debian /build/aodp /usr/local/bin/
@@ -57,6 +70,7 @@ COPY --from=fastqc /build/FastQC /opt/fastqc
 COPY --from=bowtie /build/bowtie2/* /usr/local/bin/
 COPY --from=flash /build/flash /opt/flash
 COPY --from=spades /build/spades /opt/spades
+COPY --from=spring /build/Spring-1.0.1/build/spring /usr/local/bin/spring
 RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre && \
     rm -rf /var/lib/apt/lists/* && \
